@@ -1,8 +1,9 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.ts"
@@ -16,10 +17,13 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "node-telegram-bot-api": "^0.66.0",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
-    "@types/node-telegram-bot-api": "^0.64.7"
+    "@types/node-telegram-bot-api": "^0.64.7",
+    "tsx": "^4.19.1"
   }
 }

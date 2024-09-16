@@ -1,13 +1,16 @@
-import path from "path";
-
+import path, { dirname } from "path";
 import TelegramBot, {
   Message,
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
 } from "node-telegram-bot-api";
+import { telegramBOT } from '../server.js';
+import { fileURLToPath } from 'url';
 
 // Регулярное выражение для проверки email
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const userStages: UserStages = {};
 // Определяем тип для объекта stages
 interface Stage {
@@ -24,6 +27,37 @@ interface Stage {
   ) => string;
 }
 
+
+const sendReminder = async (chatID: number, text: string, reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove) => {
+  await telegramBOT.sendMessage(chatID, text, {
+    reply_markup
+  });
+};
+
+
+const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove, time: number = 10 * 1000 * 60, clear: boolean = false) => {
+  // Удаляем предыдущий таймер, если есть
+  if (clear && userStages[chatID]?.timeoutId) {
+    clearTimeout(userStages[chatID].timeoutId);
+    delete userStages[chatID].timeoutId;
+  }
+
+
+  if (userStages[chatID]?.timeoutId) {
+    clearTimeout(userStages[chatID].timeoutId);
+    return delete userStages[chatID].timeoutId;
+  }
+
+  // Устанавливаем новый таймер
+  userStages[chatID].timeoutId = setTimeout(async () => {
+    sendReminder(chatID, text, reply_markup);
+  }, time);
+
+
+};
+
+
+
 // Типизируем объект stages, который содержит различные стадии взаимодействия
 const stages: Record<string, Stage> = {
   start: {
@@ -32,7 +66,13 @@ const stages: Record<string, Stage> = {
     reply_markup: {
       keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ✅" }]],
     },
-    action: (msg: string) => (emailRegex.test(msg) ? "stage_1-1" : "stage_1-2"),
+    action: (msg, chatID) => {
+      if (emailRegex.test(msg)) {
+        startTimeout(chatID!)
+        return "stage_1-1"
+      }
+      else { return "stage_1-2" }
+    }
   },
   "stage_1-1": {
     sendText: () =>
@@ -43,7 +83,9 @@ const stages: Record<string, Stage> = {
       resize_keyboard: true,
       one_time_keyboard: true,
     },
-    action: () => "stage_2-1",
+    action: (msg, chatID) => {
+      return "stage_2-1"
+    },
   },
   "stage_1-2": {
     sendText: () =>
@@ -443,8 +485,8 @@ const stages: Record<string, Stage> = {
       return msg === "СКАЧАТЬ ШАБЛОН!"
         ? "stage_25-1"
         : photo
-        ? "stage_25-2"
-        : "stage_24-1";
+          ? "stage_25-2"
+          : "stage_24-1";
     },
   },
 
@@ -693,30 +735,16 @@ const stages: Record<string, Stage> = {
   },
 
   "stage_42-1": {
-    sendText: () =>
-      "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт [ССЫЛКА], чтобы воспользоваться промокодом LESTVITSA, пока он не сгорел (до 23.09.2024)!</b>",
+    sendText: (chatID) => {
+      startTimeout(chatID!, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", { keyboard: [[{ text: "ТГ-канал" }], [{ text: "INSTAGRAM" }], [{ text: "САЙТ" }]] }, 10000, true)
+      return "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт [ССЫЛКА], чтобы воспользоваться промокодом PRECHISTAYA, пока он не сгорел (до 23.09.2024)!</b>"
+    },
     reply_markup: {
       keyboard: [[{ text: "ПЕРЕЙТИ НА САЙТ" }]],
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
-      return "stage_43-1";
-    },
-  },
-
-  "stage_43-1": {
-    sendText: () =>
-      "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋",
-    reply_markup: {
-      keyboard: [
-        [{ text: "ТГ-канал" }],
-        [{ text: "INSTAGRAM" }],
-        [{ text: "САЙТ" }],
-      ],
-      resize_keyboard: true,
-    },
-    action: (msg, chatID) => {
-      return "stage_43-1";
+      return "end";
     },
   },
 };
@@ -768,30 +796,42 @@ interface UserStages {
     stage: string;
     username: string;
     stage_9_score: number;
+    timeoutId?: NodeJS.Timeout;
   };
 }
 
-export const inizializationBOT = (bot: TelegramBot): void => {
-  bot.on("message", async (msg: Message) => {
+export const inizializationBOT = (): void => {
+  telegramBOT.on("message", async (msg: Message) => {
     const chatID = msg.chat.id;
     const userMessage = msg.text?.trim() || "";
     const currentStage = userStages[chatID];
     const photo = msg.photo;
     if (!currentStage) {
       userStages[chatID] = {
-        stage: "stage_28-1",
+        stage: "start",
         username: msg.from?.username || "Unknown",
         stage_9_score: 0,
       };
-      await sendMessage(chatID, "start", bot);
-    } else {
+      startTimeout(chatID, "К сожалению, без знакомства начать игру не получится...😥\n\nА ведь вас здесь вас ждут вопросы, викторины, новые знания и даже приятный подарок!", {
+        keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ ✅" }]],
+      }, 10000)
+      await sendMessage(chatID, "start", telegramBOT);
+    }
+    else if (currentStage.stage === 'end') {
+      await telegramBOT.sendMessage(chatID, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", {
+        reply_markup: {
+          keyboard: [[{ text: "ТГ-канал" }], [{ text: "INSTAGRAM" }], [{ text: "САЙТ" }]]
+        }
+      })
+    }
+    else {
       const nextStage = stages[currentStage.stage].action(
         userMessage,
         chatID,
         photo
       );
       userStages[chatID].stage = nextStage;
-      await sendMessage(chatID, nextStage, bot);
+      await sendMessage(chatID, nextStage, telegramBOT);
     }
   });
 };

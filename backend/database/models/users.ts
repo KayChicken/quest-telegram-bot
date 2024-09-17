@@ -1,11 +1,13 @@
-import { UUID } from 'crypto';
 import { Entity, PrimaryColumn, Column, Index } from "typeorm";
 
 @Entity() // Декоратор для обозначения сущности
 @Index("chatID_index", ["chatID"]) // Создание индекса на поле chatID
 export class Users {
-  @PrimaryColumn({ type: "uuid" })
-  chatID: UUID; // Первичный ключ и индекс
+  @PrimaryColumn({ type: "int" })
+  chatID: number; // Первичный ключ и индекс
+
+  @Column({ type: "varchar", length: 255 })
+  email: string; // Поле email пользователя
 
   @Column({ type: "varchar", length: 255 })
   username: string; // Поле для имени пользователя

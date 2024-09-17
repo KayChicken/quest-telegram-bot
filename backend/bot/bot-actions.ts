@@ -1,11 +1,14 @@
 import path, { dirname } from "path";
 import TelegramBot, {
+  InlineKeyboardMarkup,
+  InputMedia,
   Message,
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
 } from "node-telegram-bot-api";
 import { telegramBOT } from '../server.js';
 import { fileURLToPath } from 'url';
+import { createUser, getCurrentScoreByChatID, getUserByChatID, getUserNameByChatID, setEmailForUser, setStageByChatID, setUsernameByChatID, upCurrentScoreNineStage } from '../database/actions.js';
 
 // Регулярное выражение для проверки email
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,29 +17,34 @@ const __dirname = dirname(__filename);
 const userStages: UserStages = {};
 // Определяем тип для объекта stages
 interface Stage {
-  sendText: (chatID?: number) => string;
-  reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove;
+  sendText: (chatID?: number) => Promise<string> | string;
+  reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup;
   before_image?: string;
   before_video_note?: string;
   before_video?: string;
   before_animation?: string;
+  before_media_group?: InputMedia[]
   action: (
     msg: string,
     chatID?: number,
     photo?: TelegramBot.PhotoSize[]
-  ) => string;
+  ) => Promise<string> | string;
 }
 
 
-const sendReminder = async (chatID: number, text: string, reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove) => {
+const sendReminder = async (chatID: number, text: string, reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup) => {
   await telegramBOT.sendMessage(chatID, text, {
     reply_markup
   });
 };
 
 
-const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove, time: number = 10 * 1000 * 60, clear: boolean = false) => {
+const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup, time: number = 10 * 1000 * 60, clear: boolean = false) => {
   // Удаляем предыдущий таймер, если есть
+  if (!userStages[chatID]) {
+    userStages[chatID] = {}
+  }
+
   if (clear && userStages[chatID]?.timeoutId) {
     clearTimeout(userStages[chatID].timeoutId);
     delete userStages[chatID].timeoutId;
@@ -47,6 +55,7 @@ const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKey
     clearTimeout(userStages[chatID].timeoutId);
     return delete userStages[chatID].timeoutId;
   }
+
 
   // Устанавливаем новый таймер
   userStages[chatID].timeoutId = setTimeout(async () => {
@@ -66,9 +75,10 @@ const stages: Record<string, Stage> = {
     reply_markup: {
       keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ✅" }]],
     },
-    action: (msg, chatID) => {
+    action: async (msg, chatID) => {
       if (emailRegex.test(msg)) {
         startTimeout(chatID!)
+        await setEmailForUser(chatID, msg)
         return "stage_1-1"
       }
       else { return "stage_1-2" }
@@ -77,7 +87,7 @@ const stages: Record<string, Stage> = {
   "stage_1-1": {
     sendText: () =>
       "Здравствуйте-здравствуйте! 👋\nМеня зовут Ирина, я реставратор живописи, специалист по иконографии и искусствовед, автор телеграм-канала «Икона в каноне» https://t.me/ikona_v_kanone и обучающих программ по иконографии. Рада видеть вас здесь ❤️\n\n<b>Это бот-игра.</b> С его помощью вы проверите свои знания о Богородице, узнаете кое-что новое о Ее иконографии, и, конечно, получите от меня подарок!",
-    before_image: "ira.jfif",
+    before_image: "ira.JPG",
     reply_markup: {
       keyboard: [[{ text: "ДА, ЭТО ИНТЕРЕСНО!" }]],
       resize_keyboard: true,
@@ -96,7 +106,7 @@ const stages: Record<string, Stage> = {
   "stage_2-1": {
     sendText: () =>
       "Вас ждут 3 викторины и 2 задания, выполните их, чтобы оценить, на какой ступени своей собственной лествицы к Богу сейчас находитесь\n\nЗа каждое задание вам начислятся сердечки❤️, их вы сможете посчитать в боте. Множим любовь вместе!\n\nВы уже готовы начать?",
-    before_video_note: "video1.mp4",
+    before_video: "vse-stremimsya.mp4",
     reply_markup: {
       keyboard: [[{ text: "КОНЕЧНО!" }]],
       resize_keyboard: true,
@@ -111,15 +121,18 @@ const stages: Record<string, Stage> = {
       remove_keyboard: true,
     },
     action: (msg, chatID) => {
-      userStages[chatID!].username = msg;
-      return "stage_4-1";
+      return setUsernameByChatID(chatID, msg).then(() => {
+        return "stage_4-1";
+      });
+
     },
   },
 
   "stage_4-1": {
     sendText: (chatID) => {
-      const username = userStages[chatID!].username;
-      return `${username}, представьте, вы зашли в храм. Горят свечи, пахнет ладаном, мягко светится золото икон. Что вы в этот момент чувствуете?`;
+      return getUserNameByChatID(chatID).then((username) => {
+        return `${username}, представьте, вы зашли в храм. Горят свечи, пахнет ладаном, мягко светится золото икон. Что вы в этот момент чувствуете?`;
+      })
     },
     reply_markup: {
       keyboard: [
@@ -129,7 +142,7 @@ const stages: Record<string, Stage> = {
       ],
       resize_keyboard: true,
     },
-    before_image: "ira.jfif",
+    before_animation: "ira-gif.GIF",
     action: (msg, chatID) => {
       return "stage_5-1";
     },
@@ -156,9 +169,9 @@ const stages: Record<string, Stage> = {
       keyboard: [[{ text: "Да" }, { text: "Нет " }]],
       resize_keyboard: true,
     },
-    action: (msg, chatID) => {
+    action: async (msg, chatID) => {
       msg.toLowerCase() === "да"
-        ? (userStages[chatID!].stage_9_score += 1)
+        ? await upCurrentScoreNineStage(chatID)
         : "";
       return "stage_6-2";
     },
@@ -172,9 +185,9 @@ const stages: Record<string, Stage> = {
       keyboard: [[{ text: "Да" }, { text: "Нет " }]],
       resize_keyboard: true,
     },
-    action: (msg, chatID) => {
+    action: async (msg, chatID) => {
       msg.toLowerCase() === "да"
-        ? (userStages[chatID!].stage_9_score += 1)
+        ? await upCurrentScoreNineStage(chatID)
         : "";
       return "stage_6-3";
     },
@@ -188,9 +201,9 @@ const stages: Record<string, Stage> = {
       keyboard: [[{ text: "Да" }, { text: "Нет " }]],
       resize_keyboard: true,
     },
-    action: (msg, chatID) => {
+    action: async (msg, chatID) => {
       msg.toLowerCase() === "да"
-        ? (userStages[chatID!].stage_9_score += 1)
+        ? await upCurrentScoreNineStage(chatID)
         : "";
       return "stage_6-4";
     },
@@ -204,11 +217,9 @@ const stages: Record<string, Stage> = {
       keyboard: [[{ text: "Да" }, { text: "Нет " }]],
       resize_keyboard: true,
     },
-    action: (msg, chatID) => {
-      msg.toLowerCase() === "да"
-        ? (userStages[chatID!].stage_9_score += 1)
-        : "";
-      return `stage_7-${userStages[chatID!].stage_9_score}`;
+    action: async (msg, chatID) => {
+      const score = await getCurrentScoreByChatID(chatID);
+      return msg.toLocaleLowerCase() === "да" ? `stage_7-${score + 1}` : `stage_7-${score}`;
     },
   },
 
@@ -292,7 +303,7 @@ const stages: Record<string, Stage> = {
 
   "stage_9-1": {
     sendText: () => "",
-    before_video: "video2.mp4",
+    before_video: "uznat.mp4",
     reply_markup: {
       keyboard: [[{ text: "КАК ЗДОРОВО!" }]],
       resize_keyboard: true,
@@ -305,7 +316,7 @@ const stages: Record<string, Stage> = {
   "stage_10-1": {
     sendText: () =>
       `Для меня очень ценно, что вы готовы разделить со мной любовь к Богородице!\n\nА первая ступенечка пройдена — поздравляю, вы заработали 100 сердечек❤️!\n\n<b>[Начисление сердец❤️]</b>\n\nЗа ваши искренние ответы вы получаете 100 сердечек и переходите на следующую ступенечку!\n\nДвигаемся дальше?`,
-    before_animation: "hearts.gif",
+    before_animation: "hearts.GIF",
     reply_markup: {
       keyboard: [[{ text: "ДА!" }]],
       resize_keyboard: true,
@@ -341,7 +352,7 @@ const stages: Record<string, Stage> = {
 
   "stage_14-1": {
     sendText: () => "",
-    before_image: "Neupivaemaya_Chasha.jpg",
+    before_image: "neupivaema-chasha.jpg",
     reply_markup: {
       keyboard: [
         [{ text: "БЛИЗКИЙ СТРАДАЕТ АЛКОГОЛИЗМОМ" }],
@@ -369,7 +380,7 @@ const stages: Record<string, Stage> = {
 
   "stage_16-1": {
     sendText: () => "",
-    before_image: "vziskanie.jpg",
+    before_image: "vziskanie-pogibshih.jpg",
     reply_markup: {
       keyboard: [
         [{ text: "ПОИСК БЕЗ ВЕСТИ ПРОПАВШИХ" }],
@@ -411,7 +422,7 @@ const stages: Record<string, Stage> = {
 
   "stage_18-1": {
     sendText: () => "",
-    before_image: "Vatopedi_monastery.jpg",
+    before_image: "vse-carica.jpg",
     reply_markup: {
       keyboard: [
         [{ text: "СЕРЬЕЗНОЕ ЗАБОЛЕВАНИЕ" }],
@@ -464,7 +475,7 @@ const stages: Record<string, Stage> = {
   "stage_23-1": {
     sendText: () =>
       "Как выполнить задание:\n1. Скачайте изображение\n2. Выложите его в любой из своих социальных сетей\n3. Отметьте @ikona_v_kanone\n4. Сделайте скриншот и пришлите его сюда",
-    before_image: "pro-zapusk.png",
+    before_image: "template.jpg",
     reply_markup: {
       keyboard: [[{ text: "ВСЕ ЯСНО!" }]],
       resize_keyboard: true,
@@ -492,7 +503,7 @@ const stages: Record<string, Stage> = {
 
   "stage_25-1": {
     sendText: () => "Шаблон",
-    before_image: "pro-zapusk.png",
+    before_image: "template.jpg",
     reply_markup: {
       keyboard: [[{ text: "ПРИСЛАТЬ СКРИНШОТ" }]],
       resize_keyboard: true,
@@ -552,7 +563,7 @@ const stages: Record<string, Stage> = {
 
   "stage_30-1": {
     sendText: () => "Фрагмент какой иконы Богородицы вы видите?",
-    before_image: "random.jfif",
+    before_image: "part-dostoyno-est.jpg",
     reply_markup: {
       keyboard: [
         [{ text: "«Достойно есть...»" }],
@@ -569,6 +580,7 @@ const stages: Record<string, Stage> = {
   "stage_31-1": {
     sendText: () =>
       "Правильный ответ! \nПоздравляю, вы заработали еще 80 сердечек ❤️\n\n Это фрагмент аллегорического гимнографическго изображения Богородицы «Достойно есть». Он иллюстрирует текст песнопения «Честне́йшую Херуви́м и сла́внейшую без сравне́ния Серафи́м»\n\nПоэтому здесь мы видим архангелов и прочие Небесные Силы",
+    before_image: "dostoyno-est.jpg",
     reply_markup: {
       keyboard: [[{ text: "ИДЕМ ДАЛЬШЕ" }]],
       resize_keyboard: true,
@@ -581,6 +593,7 @@ const stages: Record<string, Stage> = {
   "stage_31-2": {
     sendText: () =>
       "Белое пятно найдено!\n\nПеред вами фрагмент аллегорического гимнографическго изображения Богородицы «Достойно есть». Он иллюстрирует текст песнопения «Честне́йшую Херуви́м и сла́внейшую без сравне́ния Серафи́м»\n\nПоэтому здесь мы видим архангелов и прочие Небесные Силы\n\nНу а вы получаете еще 80 сердечек❤️, потому что узнали кое-то новое!",
+    before_image: "dostoyno-est.jpg",
     reply_markup: {
       keyboard: [[{ text: "ИДЕМ ДАЛЬШЕ" }]],
       resize_keyboard: true,
@@ -592,7 +605,7 @@ const stages: Record<string, Stage> = {
 
   "stage_32-1": {
     sendText: () => "Фрагмент какой фрески вы видите?",
-    before_image: "random.jfif",
+    before_image: "part-marii.jpg",
     reply_markup: {
       keyboard: [
         [{ text: "ИСПЫТАНИЕ МАРИИ" }],
@@ -609,7 +622,7 @@ const stages: Record<string, Stage> = {
   "stage_33-1": {
     sendText: () =>
       "Верно! Вы заработали еще 80 сердечек ❤️\n\nЭто фрагмент фрески протоевангельского (то есть до событий Евангелия) цикла, сюжет «Обручение Марии». Здесь первосвященник передает Марию святому Иосифу, выбранному среди других мужей.\n\nПодробно жизнеописание Девы Марии мы разбираем на курсе «Лествица в небо».",
-    before_image: "random.jfif",
+    before_image: "marii.jpg",
     reply_markup: {
       keyboard: [[{ text: "КАК ИНТЕРЕСНО!" }]],
       resize_keyboard: true,
@@ -622,6 +635,7 @@ const stages: Record<string, Stage> = {
   "stage_33-2": {
     sendText: () =>
       "Мы нашли белое пятно!\n\nЭто фрагмент фрески протоевангельского (то есть до событий Евангелия) цикла, сюжет «Обручение Марии». Здесь первосвященник передает Марию святому Иосифу, выбранному среди других мужей.\n\nПодробно жизнеописание Девы Марии мы разбираем на курсе «Лествица в небо».\n\nНу а вы получаете еще 80 сердечек❤️, потому что узнали кое-то новое!",
+    before_image: "marii.jpg",
     reply_markup: {
       keyboard: [[{ text: "КАК ИНТЕРЕСНО!" }]],
       resize_keyboard: true,
@@ -634,7 +648,7 @@ const stages: Record<string, Stage> = {
   "stage_34-1": {
     sendText: () =>
       "Фрагмент какой иконы Богородицы вы видите?",
-    before_image: "random.jfif",
+    before_image: "part-gora.jpg",
     reply_markup: {
       keyboard: [
         [{ text: "ВСЕЦАРИЦА" }],
@@ -651,6 +665,7 @@ const stages: Record<string, Stage> = {
   "stage_35-1": {
     sendText: () =>
       "Отлично!\n\nВы ответили верно и заработали 80 сердечек ❤️\n\nЭто фрагмент фрески протоевангельского (то есть до событий Евангелия) цикла, сюжет «Обручение Марии». Здесь первосвященник передает Марию святому Иосифу, выбранному среди других мужей.\n\nПодробно жизнеописание Девы Марии мы разбираем на курсе «Лествица в небо».",
+    before_image: "gora.jpg",
     reply_markup: {
       keyboard: [[{ text: "А ЧТО ДАЛЬШЕ?" }]],
       resize_keyboard: true,
@@ -663,8 +678,9 @@ const stages: Record<string, Stage> = {
   "stage_35-2": {
     sendText: () =>
       "Оп! Белое пятно!\n\nЭто фрагмент иконы Богородицы «Гора Нерукосечная» — здесь у Приснодевы облачные одежды, гора и лествица в руках, а вместо звезд приснодевства — красноликие ангелы. Почему все так, рассказываю на курсе «Лествица в небо».\n\nНу а вы пока получаете 80 сердечек❤️, ведь теперь вы знаете, что это за икона!",
+    before_image: "gora.jpg",
     reply_markup: {
-      keyboard: [[{ text: "А ЧТО ДАЛЬШЕ?" }]],
+      keyboard: [[{ text: "И ЭТО ПРЕКРАСНО!" }]],
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
@@ -675,7 +691,7 @@ const stages: Record<string, Stage> = {
   "stage_36-1": {
     sendText: () =>
       "Вы набрали 240 сердечек за ответы на вопросы ❤️\n\nА также узнали, что образы Богородицы  — это не только Владимирская и Казанская.\n\nОбразы любимой нами Пречистой Девы могут рассказывать тексты, повествовать о Ее жизни, раскрывать главные христианские ценности — если научиться их понимать",
-    before_animation: "hearts.gif",
+    before_animation: "hearts.GIF",
     reply_markup: {
       keyboard: [[{ text: "И ЭТО ПРЕКРАСНО!" }]],
       resize_keyboard: true,
@@ -688,9 +704,9 @@ const stages: Record<string, Stage> = {
   "stage_37-1": {
     sendText: () =>
       "Кстати, на курсе «Лествица в небо» вы👆\n\nА сердечки❤️, которые вы накопили, тоже кое в чем вам пригодятся...",
-    before_image: "random.jfif",
+    before_media_group: [{ media: path.resolve(__dirname, './img/group_1.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_2.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_3.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_4.jpg'), type: 'photo' }],
     reply_markup: {
-      keyboard: [[{ text: "И ЭТО ПРЕКРАСНО!" }]],
+      keyboard: [[{ text: "КАК?" }]],
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
@@ -736,11 +752,23 @@ const stages: Record<string, Stage> = {
 
   "stage_42-1": {
     sendText: (chatID) => {
-      startTimeout(chatID!, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", { keyboard: [[{ text: "ТГ-канал" }], [{ text: "INSTAGRAM" }], [{ text: "САЙТ" }]] }, 10000, true)
-      return "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт [ССЫЛКА], чтобы воспользоваться промокодом PRECHISTAYA, пока он не сгорел (до 23.09.2024)!</b>"
+      startTimeout(chatID!, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", { inline_keyboard: [[{ text: "ТГ-канал", url: "https://t.me/ikona_v_kanone" }], [{ text: "INSTAGRAM", url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr" }], [{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]] }, 10000, true)
+      return "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт https://ikona-v-kanone.com/lestvica, чтобы воспользоваться промокодом PRECHISTAYA, пока он не сгорел (до 23.09.2024)!</b>"
     },
     reply_markup: {
-      keyboard: [[{ text: "ПЕРЕЙТИ НА САЙТ" }]],
+      inline_keyboard: [[{ text: "ПЕРЕЙТИ НА САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]],
+    },
+    action: (msg, chatID) => {
+      return "end";
+    },
+  },
+
+  "end": {
+    sendText: (chatID) => {
+      return "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋"
+    },
+    reply_markup: {
+      inline_keyboard: [[{ text: "ТГ-канал", url: "https://t.me/ikona_v_kanone" }], [{ text: "INSTAGRAM", url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr" }], [{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]],
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
@@ -755,12 +783,37 @@ const sendMessage = async (
   bot: TelegramBot
 ): Promise<void> => {
   const stage = stages[currentStage];
+  const stageTest = await stage.sendText(chatID);
   if (!stage) return;
+  if (stage.before_media_group && stageTest) {
+    await bot.sendMediaGroup(chatID, stage.before_media_group);
+  }
+  if (stage.before_image && stageTest) {
+    const imagePath = path.resolve(__dirname, `./img/${stage.before_image}`);
+    await bot.sendPhoto(chatID, imagePath, {
+      caption: stageTest,
+      reply_markup: stage.reply_markup,
+      parse_mode: "HTML"
+    });
+    return;
+  }
   if (stage.before_image) {
     const imagePath = path.resolve(__dirname, `./img/${stage.before_image}`);
     await bot.sendPhoto(chatID, imagePath, {
       reply_markup: stage.reply_markup,
     });
+  }
+  if (stage.before_animation && stageTest) {
+    const animationPath = path.resolve(
+      __dirname,
+      `./img/${stage.before_animation}`
+    );
+    await bot.sendAnimation(chatID, animationPath, {
+      caption: stageTest,
+      reply_markup: stage.reply_markup,
+      parse_mode: "HTML"
+    });
+    return;
   }
   if (stage.before_animation) {
     const animationPath = path.resolve(
@@ -776,13 +829,21 @@ const sendMessage = async (
     );
     await bot.sendVideoNote(chatID, videoPath);
   }
+  if (stage.before_video && stageTest) {
+    const videoPath = path.resolve(__dirname, `./video/${stage.before_video}`);
+    await bot.sendVideo(chatID, videoPath, {
+      caption: stageTest,
+      reply_markup: stage.reply_markup,
+      parse_mode: "HTML"
+    });
+    return;
+  }
   if (stage.before_video) {
     const videoPath = path.resolve(__dirname, `./video/${stage.before_video}`);
     await bot.sendVideo(chatID, videoPath, {
       reply_markup: stage.reply_markup,
     });
   }
-  const stageTest = stage.sendText(chatID);
   if (stageTest) {
     await bot.sendMessage(chatID, stageTest, {
       reply_markup: stage.reply_markup,
@@ -793,9 +854,6 @@ const sendMessage = async (
 
 interface UserStages {
   [chatID: number]: {
-    stage: string;
-    username: string;
-    stage_9_score: number;
     timeoutId?: NodeJS.Timeout;
   };
 }
@@ -804,33 +862,23 @@ export const inizializationBOT = (): void => {
   telegramBOT.on("message", async (msg: Message) => {
     const chatID = msg.chat.id;
     const userMessage = msg.text?.trim() || "";
-    const currentStage = userStages[chatID];
+    const currentStage = await getUserByChatID(chatID);
     const photo = msg.photo;
     if (!currentStage) {
-      userStages[chatID] = {
-        stage: "start",
-        username: msg.from?.username || "Unknown",
-        stage_9_score: 0,
-      };
+      await createUser({ chatID: chatID, stage: "start", stage_9_score: 0, username: "Unknown", email: "" })
+      userStages[chatID] = {};
       startTimeout(chatID, "К сожалению, без знакомства начать игру не получится...😥\n\nА ведь вас здесь вас ждут вопросы, викторины, новые знания и даже приятный подарок!", {
         keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ ✅" }]],
       }, 10000)
       await sendMessage(chatID, "start", telegramBOT);
     }
-    else if (currentStage.stage === 'end') {
-      await telegramBOT.sendMessage(chatID, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", {
-        reply_markup: {
-          keyboard: [[{ text: "ТГ-канал" }], [{ text: "INSTAGRAM" }], [{ text: "САЙТ" }]]
-        }
-      })
-    }
     else {
-      const nextStage = stages[currentStage.stage].action(
+      const nextStage = await stages[currentStage.stage].action(
         userMessage,
         chatID,
         photo
-      );
-      userStages[chatID].stage = nextStage;
+      )
+      await setStageByChatID(chatID, nextStage)
       await sendMessage(chatID, nextStage, telegramBOT);
     }
   });

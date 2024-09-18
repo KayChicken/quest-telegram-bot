@@ -8,7 +8,7 @@ import TelegramBot, {
 } from "node-telegram-bot-api";
 import { telegramBOT } from '../server.js';
 import { fileURLToPath } from 'url';
-import { createUser, getCurrentScoreByChatID, getUserByChatID, getUserNameByChatID, setEmailForUser, setStageByChatID, setUsernameByChatID, upCurrentScoreNineStage } from '../database/actions.js';
+import { createUser, getCurrentScoreByChatID, getUserByChatID, getUserNameByChatID, setEmailForUser, setStageByChatID, setUsernameByChatID, startTimeoutInDB, stopTimeoutInDB, upCurrentScoreNineStage } from '../database/actions.js';
 
 // Регулярное выражение для проверки email
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,38 +32,37 @@ interface Stage {
 }
 
 
-const sendReminder = async (chatID: number, text: string, reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup) => {
-  await telegramBOT.sendMessage(chatID, text, {
-    reply_markup
-  });
-};
+// const sendReminder = async (chatID: number, text: string, reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup) => {
+//   await telegramBOT.sendMessage(chatID, text, {
+//     reply_markup
+//   });
+// };
 
 
-const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup, time: number = 10 * 1000 * 60, clear: boolean = false) => {
-  // Удаляем предыдущий таймер, если есть
-  if (!userStages[chatID]) {
-    userStages[chatID] = {}
-  }
+// const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup, time: number = 10 * 1000 * 60, clear: boolean = false) => {
+//   if (!userStages[chatID]) {
+//     userStages[chatID] = {}
+//   }
 
-  if (clear && userStages[chatID]?.timeoutId) {
-    clearTimeout(userStages[chatID].timeoutId);
-    delete userStages[chatID].timeoutId;
-  }
-
-
-  if (userStages[chatID]?.timeoutId) {
-    clearTimeout(userStages[chatID].timeoutId);
-    return delete userStages[chatID].timeoutId;
-  }
+//   if (clear && userStages[chatID]?.timeoutId) {
+//     clearTimeout(userStages[chatID].timeoutId);
+//     delete userStages[chatID].timeoutId;
+//   }
 
 
-  // Устанавливаем новый таймер
-  userStages[chatID].timeoutId = setTimeout(async () => {
-    sendReminder(chatID, text, reply_markup);
-  }, time);
+//   if (userStages[chatID]?.timeoutId) {
+//     clearTimeout(userStages[chatID].timeoutId);
+//     return delete userStages[chatID].timeoutId;
+//   }
 
 
-};
+//   // Устанавливаем новый таймер
+//   userStages[chatID].timeoutId = setTimeout(async () => {
+//     sendReminder(chatID, text, reply_markup);
+//   }, time);
+
+
+// };
 
 
 
@@ -77,7 +76,7 @@ const stages: Record<string, Stage> = {
     },
     action: async (msg, chatID) => {
       if (emailRegex.test(msg)) {
-        startTimeout(chatID!)
+        stopTimeoutInDB(chatID!)
         await setEmailForUser(chatID, msg)
         return "stage_1-1"
       }
@@ -100,7 +99,14 @@ const stages: Record<string, Stage> = {
   "stage_1-2": {
     sendText: () =>
       "Это не похоже на электронную почту 🤔\nНапишите пожалуйста настоящий адрес👇 [под спойлер] Или вы робот 😱",
-    action: (msg: string) => (emailRegex.test(msg) ? "stage_1-1" : "stage_1-2"),
+    action: async (msg, chatID) => {
+      if (emailRegex.test(msg)) {
+        stopTimeoutInDB(chatID!)
+        await setEmailForUser(chatID, msg)
+        return "stage_1-1"
+      }
+      else { return "stage_1-2" }
+    },
   },
 
   "stage_2-1": {
@@ -450,7 +456,7 @@ const stages: Record<string, Stage> = {
 
   "stage_20-1": {
     sendText: () => "",
-    before_video: "video2.mp4",
+    before_video: "last.mov",
     reply_markup: {
       keyboard: [[{ text: "ЗДОРОВО!" }]],
       resize_keyboard: true,
@@ -680,7 +686,7 @@ const stages: Record<string, Stage> = {
       "Оп! Белое пятно!\n\nЭто фрагмент иконы Богородицы «Гора Нерукосечная» — здесь у Приснодевы облачные одежды, гора и лествица в руках, а вместо звезд приснодевства — красноликие ангелы. Почему все так, рассказываю на курсе «Лествица в небо».\n\nНу а вы пока получаете 80 сердечек❤️, ведь теперь вы знаете, что это за икона!",
     before_image: "gora.jpg",
     reply_markup: {
-      keyboard: [[{ text: "И ЭТО ПРЕКРАСНО!" }]],
+      keyboard: [[{ text: "А ЧТО ДАЛЬШЕ?" }]],
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
@@ -751,8 +757,10 @@ const stages: Record<string, Stage> = {
   },
 
   "stage_42-1": {
-    sendText: (chatID) => {
-      startTimeout(chatID!, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", { inline_keyboard: [[{ text: "ТГ-канал", url: "https://t.me/ikona_v_kanone" }], [{ text: "INSTAGRAM", url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr" }], [{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]] }, 10000, true)
+    sendText: async (chatID) => {
+      startTimeoutInDB(chatID!, "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋", { inline_keyboard: [[{ text: "ТГ-канал", url: "https://t.me/ikona_v_kanone" }], [{ text: "INSTAGRAM", url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr" }], [{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]] }, 10 * 60 * 1000)
+      const deleteMessage = await telegramBOT.sendMessage(chatID, "Загрузка...", { reply_markup: { remove_keyboard: true } })
+      await telegramBOT.deleteMessage(chatID, deleteMessage.message_id);
       return "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт https://ikona-v-kanone.com/lestvica, чтобы воспользоваться промокодом PRECHISTAYA, пока он не сгорел (до 23.09.2024)!</b>"
     },
     reply_markup: {
@@ -782,19 +790,26 @@ const sendMessage = async (
   currentStage: string,
   bot: TelegramBot
 ): Promise<void> => {
+
   const stage = stages[currentStage];
   const stageTest = await stage.sendText(chatID);
   if (!stage) return;
   if (stage.before_media_group && stageTest) {
+    const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
+    const loadingMessageId = loadingMessage.message_id;
     await bot.sendMediaGroup(chatID, stage.before_media_group);
+    await bot.deleteMessage(chatID, loadingMessageId);
   }
   if (stage.before_image && stageTest) {
+    const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
+    const loadingMessageId = loadingMessage.message_id;
     const imagePath = path.resolve(__dirname, `./img/${stage.before_image}`);
     await bot.sendPhoto(chatID, imagePath, {
       caption: stageTest,
       reply_markup: stage.reply_markup,
       parse_mode: "HTML"
     });
+    await bot.deleteMessage(chatID, loadingMessageId);
     return;
   }
   if (stage.before_image) {
@@ -804,6 +819,8 @@ const sendMessage = async (
     });
   }
   if (stage.before_animation && stageTest) {
+    const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
+    const loadingMessageId = loadingMessage.message_id;
     const animationPath = path.resolve(
       __dirname,
       `./img/${stage.before_animation}`
@@ -813,6 +830,7 @@ const sendMessage = async (
       reply_markup: stage.reply_markup,
       parse_mode: "HTML"
     });
+    await bot.deleteMessage(chatID, loadingMessageId);
     return;
   }
   if (stage.before_animation) {
@@ -830,19 +848,25 @@ const sendMessage = async (
     await bot.sendVideoNote(chatID, videoPath);
   }
   if (stage.before_video && stageTest) {
+    const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
+    const loadingMessageId = loadingMessage.message_id;
     const videoPath = path.resolve(__dirname, `./video/${stage.before_video}`);
     await bot.sendVideo(chatID, videoPath, {
       caption: stageTest,
       reply_markup: stage.reply_markup,
       parse_mode: "HTML"
     });
+    await bot.deleteMessage(chatID, loadingMessageId);
     return;
   }
   if (stage.before_video) {
+    const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
+    const loadingMessageId = loadingMessage.message_id;
     const videoPath = path.resolve(__dirname, `./video/${stage.before_video}`);
     await bot.sendVideo(chatID, videoPath, {
       reply_markup: stage.reply_markup,
     });
+    await bot.deleteMessage(chatID, loadingMessageId);
   }
   if (stageTest) {
     await bot.sendMessage(chatID, stageTest, {
@@ -850,6 +874,7 @@ const sendMessage = async (
       parse_mode: "HTML",
     });
   }
+
 };
 
 interface UserStages {
@@ -860,26 +885,35 @@ interface UserStages {
 
 export const inizializationBOT = (): void => {
   telegramBOT.on("message", async (msg: Message) => {
-    const chatID = msg.chat.id;
-    const userMessage = msg.text?.trim() || "";
-    const currentStage = await getUserByChatID(chatID);
-    const photo = msg.photo;
-    if (!currentStage) {
-      await createUser({ chatID: chatID, stage: "start", stage_9_score: 0, username: "Unknown", email: "" })
-      userStages[chatID] = {};
-      startTimeout(chatID, "К сожалению, без знакомства начать игру не получится...😥\n\nА ведь вас здесь вас ждут вопросы, викторины, новые знания и даже приятный подарок!", {
-        keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ ✅" }]],
-      }, 10000)
-      await sendMessage(chatID, "start", telegramBOT);
-    }
-    else {
-      const nextStage = await stages[currentStage.stage].action(
-        userMessage,
-        chatID,
-        photo
-      )
-      await setStageByChatID(chatID, nextStage)
-      await sendMessage(chatID, nextStage, telegramBOT);
+    try {
+      const chatID = msg.chat.id;
+      const userMessage = msg.text?.trim() || "";
+      const currentStage = await getUserByChatID(chatID);
+      const photo = msg.photo;
+      if (!currentStage) {
+        const newUser = await createUser({ chatID: chatID, stage: "start", stage_9_score: 0, username: "Unknown", email: "" });
+        if (!newUser) throw new Error("Не удалось создать пользователя");
+
+        userStages[chatID] = {};
+
+        startTimeoutInDB(chatID, "К сожалению, без знакомства начать игру не получится...😥\n\nА ведь вас здесь ждут вопросы, викторины, новые знания и даже приятный подарок!", {
+          keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ ✅" }]],
+          resize_keyboard: true,
+        }, 1000 * 60);
+
+        await sendMessage(chatID, "start", telegramBOT);
+      } else {
+
+        const nextStage = await stages[currentStage.stage].action(userMessage, chatID, photo);
+
+        await setStageByChatID(chatID, nextStage);
+
+        await sendMessage(chatID, nextStage, telegramBOT);
+      }
+    } catch (error) {
+      console.error(`Ошибка в обработке сообщения от пользователя ${msg.chat.id}:`, error);
+
+      await telegramBOT.sendMessage(msg.chat.id, "Произошла ошибка. Пожалуйста, попробуйте позже.");
     }
   });
 };

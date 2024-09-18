@@ -4,6 +4,7 @@ dotenv.config();
 import { inizializationBOT } from "./bot/bot-actions";
 import TelegramBot from 'node-telegram-bot-api';
 import { appDataSource } from './database/data-source.js';
+import { startCron } from './bot/reminder.js';
 
 export const telegramBOT = new TelegramBot(process.env.API_KEY_BOT as string, {
   polling: {
@@ -21,6 +22,7 @@ app.listen(3000, async () => {
     .then(() => {
       console.log("Database is started")
       inizializationBOT();
+      startCron();
     })
     .catch((error) => console.log(error))
 });

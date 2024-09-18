@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Users } from './models/users.js';
+import { Reminder } from './models/reminder.js';
 
 export const appDataSource = new DataSource({
   type: "postgres",
@@ -10,7 +11,7 @@ export const appDataSource = new DataSource({
   database: "telegram-bot",
   synchronize: true,
   logging: false,
-  entities: [Users],
+  entities: [Users, Reminder],
   subscribers: [],
   migrations: [],
 })

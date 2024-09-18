@@ -31,48 +31,14 @@ interface Stage {
   ) => Promise<string> | string;
 }
 
-
-// const sendReminder = async (chatID: number, text: string, reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup) => {
-//   await telegramBOT.sendMessage(chatID, text, {
-//     reply_markup
-//   });
-// };
-
-
-// const startTimeout = (chatID: number, text: string = '', reply_markup?: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup, time: number = 10 * 1000 * 60, clear: boolean = false) => {
-//   if (!userStages[chatID]) {
-//     userStages[chatID] = {}
-//   }
-
-//   if (clear && userStages[chatID]?.timeoutId) {
-//     clearTimeout(userStages[chatID].timeoutId);
-//     delete userStages[chatID].timeoutId;
-//   }
-
-
-//   if (userStages[chatID]?.timeoutId) {
-//     clearTimeout(userStages[chatID].timeoutId);
-//     return delete userStages[chatID].timeoutId;
-//   }
-
-
-//   // Устанавливаем новый таймер
-//   userStages[chatID].timeoutId = setTimeout(async () => {
-//     sendReminder(chatID, text, reply_markup);
-//   }, time);
-
-
-// };
-
-
-
 // Типизируем объект stages, который содержит различные стадии взаимодействия
 const stages: Record<string, Stage> = {
   start: {
     sendText: () =>
       "Здравствуйте-здравствуйте!\nХочу убедиться, что вы не робот — пришлите пожалуйста свою почту",
     reply_markup: {
-      keyboard: [[{ text: "✅ АВТОРИЗАЦИЯ✅" }]],
+      keyboard: [[{ text: "✅АВТОРИЗАЦИЯ✅" }]],
+      resize_keyboard : true,
     },
     action: async (msg, chatID) => {
       if (emailRegex.test(msg)) {

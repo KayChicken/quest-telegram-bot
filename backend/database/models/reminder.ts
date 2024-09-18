@@ -3,7 +3,10 @@ import { Column, Entity, Index, PrimaryColumn, PrimaryGeneratedColumn } from 'ty
 @Entity()
 @Index("chatID_index_reminder", ["chatID"])
 export class Reminder {
-  @PrimaryColumn({ type: "int" })
+  @PrimaryGeneratedColumn({ type: 'int' })
+  declare id: string;
+
+  @Column({ type: "int" })
   chatID: number;
 
   @Column('text')

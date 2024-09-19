@@ -38,7 +38,7 @@ const stages: Record<string, Stage> = {
       "Здравствуйте-здравствуйте!\nХочу убедиться, что вы не робот — пришлите пожалуйста свою почту",
     reply_markup: {
       keyboard: [[{ text: "✅АВТОРИЗАЦИЯ✅" }]],
-      resize_keyboard : true,
+      resize_keyboard: true,
     },
     action: async (msg, chatID) => {
       if (emailRegex.test(msg)) {
@@ -51,7 +51,7 @@ const stages: Record<string, Stage> = {
   },
   "stage_1-1": {
     sendText: () =>
-      "Здравствуйте-здравствуйте! 👋\nМеня зовут Ирина, я реставратор живописи, специалист по иконографии и искусствовед, автор телеграм-канала «Икона в каноне» https://t.me/ikona_v_kanone и обучающих программ по иконографии. Рада видеть вас здесь ❤️\n\n<b>Это бот-игра.</b> С его помощью вы проверите свои знания о Богородице, узнаете кое-что новое о Ее иконографии, и, конечно, получите от меня подарок!",
+      "Здравствуйте-здравствуйте! 👋\nМеня зовут Ирина, я реставратор живописи, специалист по иконографии и искусствовед, автор телеграм-канала <a href='https://t.me/ikona_v_kanone'>«Икона в каноне»</a> и обучающих программ по иконографии. Рада видеть вас здесь ❤️\n\n<b>Это бот-игра.</b> С его помощью вы проверите свои знания о Богородице, узнаете кое-что новое о Ее иконографии, и, конечно, получите от меня подарок!",
     before_image: "ira.JPG",
     reply_markup: {
       keyboard: [[{ text: "ДА, ЭТО ИНТЕРЕСНО!" }]],
@@ -287,7 +287,7 @@ const stages: Record<string, Stage> = {
 
   "stage_10-1": {
     sendText: () =>
-      `Для меня очень ценно, что вы готовы разделить со мной любовь к Богородице!\n\nА первая ступенечка пройдена — поздравляю, вы заработали 100 сердечек❤️!\n\n<b>[Начисление сердец❤️]</b>\n\nЗа ваши искренние ответы вы получаете 100 сердечек и переходите на следующую ступенечку!\n\nДвигаемся дальше?`,
+      `Для меня очень ценно, что вы готовы разделить со мной любовь к Богородице!\n\nА первая ступенечка пройдена — поздравляю, вы заработали 100 сердечек❤️!\n\nЗа ваши искренние ответы вы получаете 100 сердечек и переходите на следующую ступенечку!\n\nДвигаемся дальше?`,
     before_animation: "hearts.GIF",
     reply_markup: {
       keyboard: [[{ text: "ДА!" }]],
@@ -362,7 +362,7 @@ const stages: Record<string, Stage> = {
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
-      return msg.toLowerCase() === "молитва за усопших"
+      return msg.toLowerCase() === "молитва о спасиении ближних"
         ? "stage_17-1"
         : "stage_17-2";
     },
@@ -461,15 +461,13 @@ const stages: Record<string, Stage> = {
     sendText: () =>
       "Чтобы перейти на следующую ступень, сделайте репост и пришлите его сюда, а бот начислит вам сердечки❤️!",
     reply_markup: {
-      keyboard: [[{ text: "СКАЧАТЬ ШАБЛОН!" }]],
+      remove_keyboard: true,
       resize_keyboard: true,
     },
     action: (msg, chatID, photo) => {
-      return msg === "СКАЧАТЬ ШАБЛОН!"
-        ? "stage_25-1"
-        : photo
-          ? "stage_25-2"
-          : "stage_24-1";
+      return photo
+        ? "stage_25-2"
+        : "stage_24-1";
     },
   },
 
@@ -487,7 +485,7 @@ const stages: Record<string, Stage> = {
 
   "stage_25-2": {
     sendText: () =>
-      "Поздравляю, вы заработали уже 220 сердечек❤️!\n\n<b>[Начисление сердец❤️]</b>\n\nЗа ваш комментарий вы получаете еще 380 сердечек❤️ и переходите на следующую ступенечку!\n\nДвигаемся дальше?",
+      "Поздравляю, вы заработали уже 220 сердечек❤️!\n\nЗа ваш комментарий вы получаете еще 380 сердечек❤️ и переходите на следующую ступенечку!\n\nДвигаемся дальше?",
     reply_markup: {
       keyboard: [[{ text: "ИГРАЕМ ДАЛЬШЕ!" }]],
       resize_keyboard: true,
@@ -676,7 +674,7 @@ const stages: Record<string, Stage> = {
   "stage_37-1": {
     sendText: () =>
       "Кстати, на курсе «Лествица в небо» вы👆\n\nА сердечки❤️, которые вы накопили, тоже кое в чем вам пригодятся...",
-    before_media_group: [{ media: path.resolve(__dirname, './img/group_1.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_2.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_3.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_4.jpg'), type: 'photo' }],
+    before_media_group: [{ media: path.resolve(__dirname, './img/group_1.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_2.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_4.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_3.JPEG'), type: 'photo' }],
     reply_markup: {
       keyboard: [[{ text: "КАК?" }]],
       resize_keyboard: true,
@@ -712,7 +710,7 @@ const stages: Record<string, Stage> = {
 
   "stage_41-1": {
     sendText: () =>
-      "За прохождение по «ступенечкам» вы заработали 840 сердечек❤️!\n\nИ еще 160 сердечек❤️ я дарю вам за то, что вы дошли до конца игры.\n\n<b>[Начисление сердец❤️]</b>\n\nПо кнопке ниже вас ждет промокод на 1000 ₽!",
+      "За прохождение по «ступенечкам» вы заработали 840 сердечек❤️!\n\nИ еще 160 сердечек❤️ я дарю вам за то, что вы дошли до конца игры.\n\nПо кнопке ниже вас ждет промокод на 1000 ₽!",
     reply_markup: {
       keyboard: [[{ text: "ЗАБРАТЬ ПРОМОКОД" }]],
       resize_keyboard: true,

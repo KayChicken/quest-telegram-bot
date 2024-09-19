@@ -64,7 +64,7 @@ const stages: Record<string, Stage> = {
   },
   "stage_1-2": {
     sendText: () =>
-      "Это не похоже на электронную почту 🤔\nНапишите пожалуйста настоящий адрес👇 [под спойлер] Или вы робот 😱",
+      "Это не похоже на электронную почту 🤔\nНапишите пожалуйста настоящий адрес👇 Или вы робот 😱",
     action: async (msg, chatID) => {
       if (emailRegex.test(msg)) {
         stopTimeoutInDB(chatID!)
@@ -288,7 +288,7 @@ const stages: Record<string, Stage> = {
   "stage_10-1": {
     sendText: () =>
       `Для меня очень ценно, что вы готовы разделить со мной любовь к Богородице!\n\nА первая ступенечка пройдена — поздравляю, вы заработали 100 сердечек❤️!\n\nЗа ваши искренние ответы вы получаете 100 сердечек и переходите на следующую ступенечку!\n\nДвигаемся дальше?`,
-    before_animation: "hearts.GIF",
+    before_animation: "hearts.gif",
     reply_markup: {
       keyboard: [[{ text: "ДА!" }]],
       resize_keyboard: true,
@@ -357,7 +357,7 @@ const stages: Record<string, Stage> = {
       keyboard: [
         [{ text: "ПОИСК БЕЗ ВЕСТИ ПРОПАВШИХ" }],
         [{ text: "МОЛИТВА ЗА УСОПШИХ" }],
-        [{ text: "МОЛИТВА О СПАСИЕНИИ БЛИЖНИХ" }],
+        [{ text: "МОЛИТВА О СПАСЕНИИ БЛИЖНИХ" }],
       ],
       resize_keyboard: true,
     },
@@ -422,7 +422,7 @@ const stages: Record<string, Stage> = {
 
   "stage_20-1": {
     sendText: () => "",
-    before_video: "last.mov",
+    before_video: "last.mp4",
     reply_markup: {
       keyboard: [[{ text: "ЗДОРОВО!" }]],
       resize_keyboard: true,
@@ -485,7 +485,7 @@ const stages: Record<string, Stage> = {
 
   "stage_25-2": {
     sendText: () =>
-      "Поздравляю, вы заработали уже 220 сердечек❤️!\n\nЗа ваш комментарий вы получаете еще 380 сердечек❤️ и переходите на следующую ступенечку!\n\nДвигаемся дальше?",
+      "Поздравляю, вы заработали уже 220 сердечек❤️!\n\nЗа ваш крепост вы получаете еще 380 сердечек❤️ и переходите на следующую ступенечку!\n\nДвигаемся дальше?",
     reply_markup: {
       keyboard: [[{ text: "ИГРАЕМ ДАЛЬШЕ!" }]],
       resize_keyboard: true,
@@ -661,7 +661,7 @@ const stages: Record<string, Stage> = {
   "stage_36-1": {
     sendText: () =>
       "Вы набрали 240 сердечек за ответы на вопросы ❤️\n\nА также узнали, что образы Богородицы  — это не только Владимирская и Казанская.\n\nОбразы любимой нами Пречистой Девы могут рассказывать тексты, повествовать о Ее жизни, раскрывать главные христианские ценности — если научиться их понимать",
-    before_animation: "hearts.GIF",
+    before_animation: "hearts.gif",
     reply_markup: {
       keyboard: [[{ text: "И ЭТО ПРЕКРАСНО!" }]],
       resize_keyboard: true,

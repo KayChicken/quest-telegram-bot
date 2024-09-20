@@ -16,7 +16,7 @@ export const telegramBOT = new TelegramBot(process.env.API_KEY_BOT as string, {
 
 
 const app = express();
-app.listen(3000, async () => {
+app.listen(3001, async () => {
   console.log("Server is started");
   await appDataSource.initialize()
     .then(() => {

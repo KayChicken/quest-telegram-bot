@@ -3,7 +3,7 @@ import { Entity, PrimaryColumn, Column, Index } from "typeorm";
 @Entity() // Декоратор для обозначения сущности
 @Index("chatID_index", ["chatID"]) // Создание индекса на поле chatID
 export class Users {
-  @PrimaryColumn({ type: "int" })
+  @PrimaryColumn({ type: "bigint" })
   chatID: number; // Первичный ключ и индекс
 
   @Column({ type: "varchar", length: 255 })

@@ -323,7 +323,7 @@ const stages: Record<string, Stage> = {
   },
 
   "stage_14-1": {
-    sendText: () => "",
+    sendText: () => "Икона Богородицы «Неупиваемая чаша»",
     before_image: "neupivaema-chasha.jpg",
     reply_markup: {
       keyboard: [
@@ -351,7 +351,7 @@ const stages: Record<string, Stage> = {
   },
 
   "stage_16-1": {
-    sendText: () => "",
+    sendText: () => "Икона Богородицы «Взыскание погибших»",
     before_image: "vziskanie-pogibshih.jpg",
     reply_markup: {
       keyboard: [
@@ -393,7 +393,7 @@ const stages: Record<string, Stage> = {
   },
 
   "stage_18-1": {
-    sendText: () => "",
+    sendText: () => "Икона Богородицы Всецарица",
     before_image: "vse-carica.jpg",
     reply_markup: {
       keyboard: [
@@ -706,6 +706,7 @@ const stages: Record<string, Stage> = {
   "stage_41-1": {
     sendText: () =>
       "За прохождение по «ступенечкам» вы заработали 840 сердечек❤️!\n\nИ еще 160 сердечек❤️ я дарю вам за то, что вы дошли до конца игры.\n\nПо кнопке ниже вас ждет промокод на 1000 ₽!",
+    before_animation : "hearts.gif",
     reply_markup: {
       keyboard: [[{ text: "ЗАБРАТЬ ПРОМОКОД" }]],
       resize_keyboard: true,

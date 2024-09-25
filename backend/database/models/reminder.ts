@@ -6,7 +6,7 @@ export class Reminder {
   @PrimaryGeneratedColumn({ type: 'int' })
   declare id: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "bigint" })
   chatID: number;
 
   @Column('text')

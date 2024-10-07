@@ -114,7 +114,7 @@ const stages: Record<string, Stage> = {
       ],
       resize_keyboard: true,
     },
-    before_animation: "ira-gif.GIF",
+    before_animation: "ira-gif.gif",
     action: (msg, chatID) => {
       return "stage_5-1";
     },
@@ -447,6 +447,19 @@ const stages: Record<string, Stage> = {
   "stage_23-1": {
     sendText: () =>
       "Как выполнить задание:\n1. Скачайте изображение\n2. Выложите его в любой из своих социальных сетей\n3. Отметьте @ikona_v_kanone\n4. Сделайте скриншот и пришлите его сюда",
+    before_media_group: [{ media: path.resolve(__dirname, './img/template/template1.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template2.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template3.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template4.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template5.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template6.jpg'), type: 'photo' }],
+    reply_markup: {
+      keyboard: [[{ text: "ВСЕ ЯСНО!" }]],
+      resize_keyboard: true,
+    },
+    action: (msg, chatID) => {
+      return "stage_24-1-1";
+    },
+  },
+  
+  "stage_24-1-1": {
+    sendText: () =>
+      "Выберите шаблон для публикации",
     before_image: "template.jpg",
     reply_markup: {
       keyboard: [[{ text: "ВСЕ ЯСНО!" }]],
@@ -669,7 +682,7 @@ const stages: Record<string, Stage> = {
   "stage_37-1": {
     sendText: () =>
       "Кстати, на курсе «Лествица в небо» вы👆\n\nА сердечки❤️, которые вы накопили, тоже кое в чем вам пригодятся...",
-    before_media_group: [{ media: path.resolve(__dirname, './img/group_1.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_2.JPEG'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_4.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_3.JPEG'), type: 'photo' }],
+    before_media_group: [{ media: path.resolve(__dirname, './img/group_1.jpeg'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_2.jpeg'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_4.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/group_3.jpeg'), type: 'photo' }],
     reply_markup: {
       keyboard: [[{ text: "КАК?" }]],
       resize_keyboard: true,

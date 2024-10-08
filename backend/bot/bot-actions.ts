@@ -191,7 +191,7 @@ const stages: Record<string, Stage> = {
     },
     action: async (msg, chatID) => {
       const score = await getCurrentScoreByChatID(chatID);
-      return msg.toLocaleLowerCase() === "да" ? `stage_7-${score + 1}` : `stage_7-${score}`;
+      return msg.toLocaleLowerCase() === "да" ? `stage_7-${Math.min(score + 1, 4)}` : `stage_7-${Math.min(score,4)}`;
     },
   },
 
@@ -447,20 +447,19 @@ const stages: Record<string, Stage> = {
   "stage_23-1": {
     sendText: () =>
       "Как выполнить задание:\n1. Скачайте изображение\n2. Выложите его в любой из своих социальных сетей\n3. Отметьте @ikona_v_kanone\n4. Сделайте скриншот и пришлите его сюда",
-    before_media_group: [{ media: path.resolve(__dirname, './img/template/template1.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template2.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template3.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template4.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template5.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/template/template6.jpg'), type: 'photo' }],
+    before_media_group: [{ media: path.resolve(__dirname, './img/templates/template.jpg'), type: 'photo' },{ media: path.resolve(__dirname, './img/templates/template1.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/templates/template2.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/templates/template3.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/templates/template4.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/templates/template5.jpg'), type: 'photo' }, { media: path.resolve(__dirname, './img/templates/template6.jpg'), type: 'photo' }],
     reply_markup: {
       keyboard: [[{ text: "ВСЕ ЯСНО!" }]],
       resize_keyboard: true,
     },
     action: (msg, chatID) => {
-      return "stage_24-1-1";
+      return "stage_24-1";
     },
   },
   
   "stage_24-1-1": {
     sendText: () =>
       "Выберите шаблон для публикации",
-    before_image: "template.jpg",
     reply_markup: {
       keyboard: [[{ text: "ВСЕ ЯСНО!" }]],
       resize_keyboard: true,

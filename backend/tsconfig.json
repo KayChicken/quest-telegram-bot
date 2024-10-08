@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "outDir": "./dist",
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "node16",
     "experimentalDecorators": true,
     "esModuleInterop": true
   }

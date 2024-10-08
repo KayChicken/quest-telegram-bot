@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
-import { inizializationBOT } from "./bot/bot-actions";
+import { inizializationBOT } from "./bot/bot-actions.js";
 import TelegramBot from 'node-telegram-bot-api';
 import { appDataSource } from './database/data-source.js';
 import { startCron } from './bot/reminder.js';

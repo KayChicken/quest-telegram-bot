@@ -25,6 +25,11 @@ import {
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const timeoutWords = [
+  "Не останавливайтесь на полпути, ведь впереди настоящий и очень полезный приз!",
+  "Промокод на скидку совсем близко, вы почти его получили!",
+  "Если вы пройдете бот до конца, то получите промокод на 1000 ₽! Не останавливайтесь на полпути",
+];
 const userStages: UserStages = {};
 // Определяем тип для объекта stages
 interface Stage {
@@ -861,12 +866,13 @@ const sendMessage = async (
       "stage_24-1",
       "stage_24-1-2",
       "stage_42-1",
+      "end",
     ].includes(currentStage)
   ) {
     stopTimeoutInDB(chatID);
     startTimeoutInDB(
       chatID,
-      "Не останавливайся на полпути! Вернись и продолжи свой духовный квест!",
+      timeoutWords[Math.floor(Math.random() * timeoutWords.length)],
       {},
       10 * 1000 * 60
     );

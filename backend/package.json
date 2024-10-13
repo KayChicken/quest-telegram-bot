@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.ts",
-    "build" : "tsc --project tsconfig.json",
-    "production" : "node ./dist/server.js"
+    "build": "tsc --project tsconfig.json",
+    "production": "node ./dist/server.js"
   },
   "keywords": [],
   "author": "",

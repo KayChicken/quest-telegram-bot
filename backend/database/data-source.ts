@@ -8,7 +8,7 @@ export const appDataSource = new DataSource({
   port: 5432,
   username: "postgres",
   password: "3701",
-  database: "telegram-bot",
+  database: "telegram_bot",
   synchronize: true,
   logging: false,
   entities: [Users, Reminder],

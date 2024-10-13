@@ -789,6 +789,7 @@ const stages: Record<string, Stage> = {
 
   "stage_42-1": {
     sendText: async (chatID) => {
+      await stopTimeoutInDB(chatID);
       startTimeoutInDB(
         chatID!,
         "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋",

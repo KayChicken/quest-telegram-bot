@@ -679,7 +679,7 @@ const stages: Record<string, Stage> = {
                 url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr"
               }
             ],
-            [{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]
+            [{ text: "Сайт", url: "https://ikona-v-kanone.com/lestvica" }]
           ]
         },
         10 * 60 * 1000

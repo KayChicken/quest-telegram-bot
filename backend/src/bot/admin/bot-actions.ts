@@ -90,6 +90,8 @@ adminTelegramBot.on("message", async (msg) => {
 ➡️ После репоста (без промокода): ${stats.afterRepost}
 🏁 Дошли до конца: ${stats.end}
 📌 Различные этапы: ${stats.other}
+
+🧑‍💼 Количество пользователей: ${users.length}
     `;
 
     return adminTelegramBot.sendMessage(chatId, report);
@@ -123,6 +125,8 @@ adminTelegramBot.on("message", async (msg) => {
 ➡️ После репоста (без промокода): ${stats.afterRepost}
 🏁 Дошли до конца: ${stats.end}
 📌 Различные этапы: ${stats.other}
+
+🧑‍💼 Количество пользователей: ${users.length}
     `;
 
     return adminTelegramBot.sendMessage(chatId, report);
@@ -142,6 +146,8 @@ adminTelegramBot.on("message", async (msg) => {
 ➡️ После репоста (без промокода): ${stats.afterRepost}
 🏁 Дошли до конца: ${stats.end}
 📌 Различные этапы: ${stats.other}
+
+🧑‍💼 Общее количество пользователей: ${users.length}
     `;
 
     return adminTelegramBot.sendMessage(chatId, report);

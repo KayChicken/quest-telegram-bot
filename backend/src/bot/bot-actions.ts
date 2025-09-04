@@ -675,7 +675,7 @@ const stages: Record<string, Stage> = {
             [{ text: "ТГ-канал", url: "https://t.me/ikona_v_kanone" }],
             [
               {
-                text: "INSTAGRAM",
+                text: "Запретграмм",
                 url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr"
               }
             ],
@@ -700,19 +700,10 @@ const stages: Record<string, Stage> = {
 
   end: {
     sendText: (chatID) => {
-      return "А также подписывайтесь на мои социальные сети!\n\nДо встречи на курсе! 👋";
+      return "Промокод : <b>CHUDO</b>";
     },
     reply_markup: {
-      inline_keyboard: [
-        [{ text: "ТГ-канал", url: "https://t.me/ikona_v_kanone" }],
-        [
-          {
-            text: "INSTAGRAM",
-            url: "https://www.instagram.com/ikona_v_kanone?igsh=MXd6OWVkYnd2amh4dQ%3D%3D&utm_source=qr"
-          }
-        ],
-        [{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]
-      ],
+      inline_keyboard: [[{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]],
       resize_keyboard: true
     },
     action: (msg, chatID) => {

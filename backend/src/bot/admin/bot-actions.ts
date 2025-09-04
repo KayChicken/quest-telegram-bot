@@ -42,7 +42,12 @@ adminTelegramBot.on("message", async (msg) => {
 
     await REPOSITORIES.bot.users.delete({ chatID: chatId }).catch((e) => {
       console.error(`Произошла ошибка при сбрасывании этапов ${e}`);
-      return adminTelegramBot.sendMessage(chatId, "Произошла ошибка при сбросе этапов");
+      return adminTelegramBot.sendMessage(chatId, "Произошла ошибка при сбросе этапов").catch(() => Promise.resolve());
+    });
+
+    await REPOSITORIES.bot.reminder.delete({ chatID: chatId }).catch((e) => {
+      console.error(`Произошла ошибка при удалении ${e}`);
+      return Promise.resolve();
     });
 
     return adminTelegramBot.sendMessage(chatId, "Этапы успешно сброшены");

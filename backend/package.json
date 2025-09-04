@@ -6,6 +6,7 @@
   "main": "./dist/server.js",
   "scripts": {
     "build": "tsc",
+    "start": "node ./dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env NODE_ENV=development tsx watch src/server.ts --no-cache",
     "migration:run": "rimraf dist && npm run build && cross-env NODE_ENV=development typeorm migration:run -d dist/database/data-source.js"

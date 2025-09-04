@@ -1,5 +1,5 @@
 // @ts-nocheck
-import path, { dirname } from "path";
+import path, { dirname, join } from "path";
 import TelegramBot, {
   InlineKeyboardMarkup,
   InputMedia,
@@ -24,8 +24,9 @@ import {
 
 // Регулярное выражение для проверки email
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const staticFilePath = join(process.cwd(), "public");
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+
 const userStages: UserStages = {};
 // Определяем тип для объекта stages
 interface Stage {
@@ -568,10 +569,10 @@ const stages: Record<string, Stage> = {
     sendText: () =>
       "Кстати, на курсе «Лествица в небо» вы👆\n\nА сердечки❤️, которые вы накопили, тоже кое в чем вам пригодятся...",
     before_media_group: [
-      { media: path.resolve(__dirname, "./img/group_1.JPEG"), type: "photo" },
-      { media: path.resolve(__dirname, "./img/group_2.JPEG"), type: "photo" },
-      { media: path.resolve(__dirname, "./img/group_4.jpg"), type: "photo" },
-      { media: path.resolve(__dirname, "./img/group_3.JPEG"), type: "photo" }
+      { media: path.resolve(staticFilePath, "./img/group_1.JPEG"), type: "photo" },
+      { media: path.resolve(staticFilePath, "./img/group_2.JPEG"), type: "photo" },
+      { media: path.resolve(staticFilePath, "./img/group_4.jpg"), type: "photo" },
+      { media: path.resolve(staticFilePath, "./img/group_3.JPEG"), type: "photo" }
     ],
     reply_markup: {
       keyboard: [[{ text: "КАК?" }]],
@@ -733,7 +734,7 @@ const sendMessage = async (chatID: number, currentStage: string, bot: TelegramBo
   if (stage.before_image && stageTest) {
     const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
     const loadingMessageId = loadingMessage.message_id;
-    const imagePath = path.resolve(__dirname, `./img/${stage.before_image}`);
+    const imagePath = path.resolve(staticFilePath, `./img/${stage.before_image}`);
     await bot.sendPhoto(chatID, imagePath, {
       caption: stageTest,
       reply_markup: stage.reply_markup,
@@ -743,7 +744,7 @@ const sendMessage = async (chatID: number, currentStage: string, bot: TelegramBo
     return;
   }
   if (stage.before_image) {
-    const imagePath = path.resolve(__dirname, `./img/${stage.before_image}`);
+    const imagePath = path.resolve(staticFilePath, `./img/${stage.before_image}`);
     await bot.sendPhoto(chatID, imagePath, {
       reply_markup: stage.reply_markup
     });
@@ -751,7 +752,7 @@ const sendMessage = async (chatID: number, currentStage: string, bot: TelegramBo
   if (stage.before_animation && stageTest) {
     const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
     const loadingMessageId = loadingMessage.message_id;
-    const animationPath = path.resolve(__dirname, `./img/${stage.before_animation}`);
+    const animationPath = path.resolve(staticFilePath, `./img/${stage.before_animation}`);
     await bot.sendAnimation(chatID, animationPath, {
       caption: stageTest,
       reply_markup: stage.reply_markup,
@@ -761,17 +762,17 @@ const sendMessage = async (chatID: number, currentStage: string, bot: TelegramBo
     return;
   }
   if (stage.before_animation) {
-    const animationPath = path.resolve(__dirname, `./img/${stage.before_animation}`);
+    const animationPath = path.resolve(staticFilePath, `./img/${stage.before_animation}`);
     await bot.sendAnimation(chatID, animationPath);
   }
   if (stage.before_video_note) {
-    const videoPath = path.resolve(__dirname, `./video/${stage.before_video_note}`);
+    const videoPath = path.resolve(staticFilePath, `./video/${stage.before_video_note}`);
     await bot.sendVideoNote(chatID, videoPath);
   }
   if (stage.before_video && stageTest) {
     const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
     const loadingMessageId = loadingMessage.message_id;
-    const videoPath = path.resolve(__dirname, `./video/${stage.before_video}`);
+    const videoPath = path.resolve(staticFilePath, `./video/${stage.before_video}`);
     await bot.sendVideo(chatID, videoPath, {
       caption: stageTest,
       reply_markup: stage.reply_markup,
@@ -783,7 +784,7 @@ const sendMessage = async (chatID: number, currentStage: string, bot: TelegramBo
   if (stage.before_video) {
     const loadingMessage = await bot.sendMessage(chatID, "Загрузка...");
     const loadingMessageId = loadingMessage.message_id;
-    const videoPath = path.resolve(__dirname, `./video/${stage.before_video}`);
+    const videoPath = path.resolve(staticFilePath, `./video/${stage.before_video}`);
     await bot.sendVideo(chatID, videoPath, {
       reply_markup: stage.reply_markup
     });

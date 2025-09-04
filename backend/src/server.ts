@@ -1,11 +1,11 @@
 import express from "express";
 
-import { inizializationBOT } from "./bot/bot-actions";
+import { inizializationBOT } from "./bot/bot-actions.js";
 import TelegramBot from "node-telegram-bot-api";
-import { appDataSource } from "./database/data-source";
-import { startCron } from "./bot/reminder";
-import { telegramBotConfigs } from "./configs/configs";
-import "./bot/admin/bot-actions";
+import { appDataSource } from "./database/data-source.js";
+import { startCron } from "./bot/reminder.js";
+import { telegramBotConfigs } from "./configs/configs.js";
+import "./bot/admin/bot-actions.js";
 
 export const telegramBOT = new TelegramBot(telegramBotConfigs.API_KEY_BOT as string, {
   polling: {

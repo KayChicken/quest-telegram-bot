@@ -1,4 +1,3 @@
-import { Reminder } from "./models/reminder.js";
 import { Users } from "./models/users.js";
 import REPOSITORIES from "./repositorires.js";
 

@@ -1,7 +1,7 @@
 import cron from "node-cron";
-import REPOSITORIES from "../database/repositorires";
+import REPOSITORIES from "../database/repositorires.js";
 import { LessThanOrEqual } from "typeorm";
-import { telegramBOT } from "../server";
+import { telegramBOT } from "../server.js";
 import TelegramBot from "node-telegram-bot-api";
 
 export const startCron = () => {

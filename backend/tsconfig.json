@@ -1,6 +1,18 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "esModuleInterop": true
-  }
+    "baseUrl": "./src",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "target": "ES2022",
+    "lib": ["es2022", "dom"],
+    "module": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true
+  },
+  "include": ["src"]
 }

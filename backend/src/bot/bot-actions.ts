@@ -688,7 +688,7 @@ const stages: Record<string, Stage> = {
         reply_markup: { remove_keyboard: true }
       });
       await telegramBOT.deleteMessage(chatID, deleteMessage.message_id);
-      return "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт https://ikona-v-kanone.com/lestvica, чтобы воспользоваться промокодом CHUDO, пока он не сгорел (до 23.09.2025)!</b>";
+      return "<b>Поздравляю, вы уже проделали огромный путь, посмотрите, сколько всего разобрали за 30 минут, а сколько еще впереди!\n\nПереходите на сайт https://ikona-v-kanone.com/lestvica, чтобы воспользоваться промокодом ZVEZDA, пока он не сгорел!</b>";
     },
     reply_markup: {
       inline_keyboard: [[{ text: "ПЕРЕЙТИ НА САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]]
@@ -700,7 +700,7 @@ const stages: Record<string, Stage> = {
 
   end: {
     sendText: (chatID) => {
-      return "Промокод : <b>CHUDO</b>";
+      return "Промокод : <b>ZVEZDA</b>";
     },
     reply_markup: {
       inline_keyboard: [[{ text: "САЙТ", url: "https://ikona-v-kanone.com/lestvica" }]],
